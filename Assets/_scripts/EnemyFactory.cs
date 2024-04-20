@@ -13,7 +13,7 @@ public class EnemyFactory : MonoBehaviour
         foreach(Enemy enemy in _enemiesPrefabs)
         {
             if (_enemies.ContainsKey(enemy.Type))
-                throw new ArgumentException(nameof(EnemyFactory));
+                throw new ArgumentException(nameof(EnemyFactory) + " " + enemy.Type.ToString());
 
             _enemies.Add(enemy.Type, enemy);
         }

@@ -1,16 +1,13 @@
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private Vector3 _target;
     [SerializeField] private float _speed;
     [SerializeField] private EnemyType _type;
 
-    private List<Vector3> _checkpoints = new List<Vector3>();
-    private int _currentCheckpointIndex = 0;
-    private float _reachDistance = 1f;
+    private Target _currentTarget;
 
     public EnemyType Type => _type;
 
@@ -18,26 +15,19 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
-        if (_currentCheckpointIndex == _checkpoints.Count)
-            return;
-
         Move();
     }
 
-    public void Move()
+    public void SetTarget(Target target)
     {
-        transform.position = Vector3.MoveTowards(transform.position, _target, _speed * Time.deltaTime);
+        if(target == null)
+            throw new ArgumentNullException($"{nameof(Enemy)} {nameof(SetTarget)} {nameof(target)}");
 
-        if (Vector3.Distance(transform.position, _target) < _reachDistance)
-        {
-            _currentCheckpointIndex++;
-            _target = _checkpoints[_currentCheckpointIndex];
-        }
+        _currentTarget = target;
     }
 
-    public void SetRoute(List<Vector3> checkpoints)
+    private void Move()
     {
-        _checkpoints = checkpoints;
-        _target = _checkpoints[_currentCheckpointIndex];
+        transform.position = Vector3.MoveTowards(transform.position, _currentTarget.transform.position, _speed * Time.deltaTime);
     }
 }

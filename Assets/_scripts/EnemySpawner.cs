@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    private const string SpawnPointTag = "SpawnPoint";
-
     [SerializeField] bool _coroutineActive;
     [SerializeField] private float _spawnDelay;
     [SerializeField] private List<SpawnPoint> _spawnPoints;
@@ -14,9 +12,10 @@ public class EnemySpawner : MonoBehaviour
 
     private WaitForSeconds _wait;
 
-    private void Awake()
+    private void OnEnable()
     {
-        FindAllSpawnPoints();
+        if (_enemies != null)
+            SubscribeOnEnemies();
     }
 
     private void Start()
@@ -25,22 +24,17 @@ public class EnemySpawner : MonoBehaviour
         StartCoroutine(SpawnCoroutine());
     }
 
-    private void FindAllSpawnPoints()
+    private void OnDisable()
     {
-        GameObject[] spawnPoints = GameObject.FindGameObjectsWithTag(SpawnPointTag);
-
-        foreach(var spawnPoint in spawnPoints)
-        {
-            if(spawnPoint.TryGetComponent(out SpawnPoint point))
-            _spawnPoints.Add(point);
-        }
+        if (_enemies != null)
+            UnsubscribeOnEnemies();
     }
 
     private IEnumerator SpawnCoroutine()
     {
         _wait = new WaitForSeconds(_spawnDelay);
 
-        while(_coroutineActive)
+        while (_coroutineActive)
         {
             Spawn();
             yield return _wait;
@@ -56,15 +50,30 @@ public class EnemySpawner : MonoBehaviour
         spawnedEnemy.transform.position = spawnPosition;
 
         spawnedEnemy.transform.SetParent(transform, true);
-        spawnedEnemy.SetRoute(point.Route.GetCheckpoints());
-        spawnedEnemy.Destroying += Destroy;
+        spawnedEnemy.SetTarget(point.Target);
+        spawnedEnemy.Destroying += DestroyEnemy;
 
         _enemies.Add(spawnedEnemy);
     }
 
-    private void Destroy(Enemy enemy)
+    private void DestroyEnemy(Enemy enemy)
     {
+        if(enemy == null)
+            throw new System.ArgumentNullException(nameof(DestroyEnemy) + " " + nameof(enemy));
+
         _enemies.Remove(enemy);
         Destroy(enemy.gameObject);
+    }
+
+    private void SubscribeOnEnemies()
+    {
+        foreach (var enemy in _enemies)
+            enemy.Destroying += DestroyEnemy;
+    }
+
+    private void UnsubscribeOnEnemies()
+    {
+        foreach (var enemy in _enemies)
+            enemy.Destroying -= DestroyEnemy;
     }
 }
