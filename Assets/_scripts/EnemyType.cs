@@ -2,5 +2,6 @@ public enum EnemyType
 {
     Capsule,
     Sphere,
-    Cube
+    Cube,
+    Zombie
 }

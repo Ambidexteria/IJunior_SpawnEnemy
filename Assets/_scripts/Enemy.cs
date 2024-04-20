@@ -28,6 +28,11 @@ public class Enemy : MonoBehaviour
 
     private void Move()
     {
+        transform.LookAt(_currentTarget.transform);
+        Quaternion rotation = transform.rotation;
+        rotation.x = 0;
+        rotation.z = 0;
+        transform.rotation = rotation;
         transform.position = Vector3.MoveTowards(transform.position, _currentTarget.transform.position, _speed * Time.deltaTime);
     }
 }
